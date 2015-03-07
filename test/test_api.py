@@ -271,7 +271,7 @@ def test_load_yaml():
             'transact': {
                 'TestEncoding': {
                     'fun_name': 'some_method',
-                    'sig': 'iii',
+                    'sig': 'iiis',
                     'gas': 10000,
                     'gas_price': 10000000000000,
                     'to': '$NameReg',
@@ -279,7 +279,8 @@ def test_load_yaml():
                     'data': [
                         '$Subcurrency',
                         42,
-                        '\x01\x00'],
+                        '\x01\x00',
+                        '\\x01\\x00'],
                     'wait': False
                 }
             }

@@ -31,11 +31,12 @@
     TestEncoding:
       to: $NameReg
       fun_name: some_method
-      sig: iii
+      sig: iiis
       data:
         - $Subcurrency
         - 42
         - "\x01\x00"
+        - \x01\x00
       gas: 10000
       gas_price: 10000000000000
       value: 0
