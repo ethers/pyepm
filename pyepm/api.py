@@ -57,6 +57,7 @@ class Api(object):
         self.address = config.get("api", "address")
         self.gas = config.getint("deploy", "gas")
         self.gas_price = config.getint("deploy", "gas_price")
+        self.manual = True
 
     def _rpc_post(self, method, params):
         payload = {
@@ -233,14 +234,17 @@ class Api(object):
             sys.stdout.write('Waiting for transaction')
             start_time = time.time()
 
-        while True:
-            if verbose:
-                sys.stdout.write('.')
-                sys.stdout.flush()
-            time.sleep(1)
-            to_count = self.transaction_count('pending')
-            if to_count > from_count:
-                break
+        if self.manual:
+            raw_input('press key when done')
+        else:
+            while True:
+                if verbose:
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
+                time.sleep(1)
+                to_count = self.transaction_count('pending')
+                if to_count > from_count:
+                    break
 
         if verbose:
             delta = time.time() - start_time
@@ -251,14 +255,17 @@ class Api(object):
             sys.stdout.write('Waiting for contract at %s' % address)
             start_time = time.time()
 
-        while True:
-            if verbose:
-                sys.stdout.write('.')
-                sys.stdout.flush()
-            time.sleep(1)
-            codeat = self.is_contract_at(address, 'pending')
-            if codeat:
-                break
+        if self.manual:
+            raw_input('press key when done')
+        else:
+            while True:
+                if verbose:
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
+                time.sleep(1)
+                codeat = self.is_contract_at(address, 'pending')
+                if codeat:
+                    break
 
         if verbose:
             delta = time.time() - start_time
@@ -274,14 +281,17 @@ class Api(object):
         else:
             last_block = from_block
 
-        while True:
-            if verbose:
-                sys.stdout.write('.')
-                sys.stdout.flush()
-            time.sleep(1)
-            block = self.last_block()
-            if block != last_block:
-                break
+        if self.manual:
+            raw_input('press key when done')
+        else:
+            while True:
+                if verbose:
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
+                time.sleep(1)
+                block = self.last_block()
+                if block != last_block:
+                    break
 
         if verbose:
             delta = time.time() - start_time
