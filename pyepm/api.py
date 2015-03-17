@@ -121,7 +121,7 @@ class Api(object):
         if gas_price is None:
             gas_price = self.gas_price
         if from_ is None:
-            from_ = self.address
+            from_ = "0x" + self.address
 
         params = [{
             'data': code,
@@ -189,7 +189,7 @@ class Api(object):
         if gas_price is None:
             gas_price = self.gas_price
         if from_ is None:
-            from_ = self.address
+            from_ = "0x" + self.address
 
         params = [{
             'from': from_,
@@ -212,7 +212,7 @@ class Api(object):
         if gas_price is None:
             gas_price = self.gas_price
         if from_ is None:
-            from_ = self.address
+            from_ = "0x" + self.address
 
         params = [{
             'from': from_,
@@ -257,7 +257,7 @@ class Api(object):
                 sys.stdout.write('.')
                 sys.stdout.flush()
             time.sleep(1)
-            to_count = self.transaction_count(defaultBlock='pending')
+            to_count = self.transaction_count(defaultBlock='latest')
             if to_count > from_count:
                 break
 
