@@ -143,6 +143,11 @@ def test_transact(mocker):
     assert mock_rpc(mocker, 'transact', [address], json_result=None,
                     rpc_method='eth_sendTransaction', rpc_params=rpc_params) is None
 
+def test_transaction_count(mocker):
+    rpc_params = [COW_ADDRESS, 'latest']
+    assert mock_rpc(mocker, 'transaction_count', [], json_result=12,
+                    rpc_method='eth_getTransactionCount', rpc_params=rpc_params) == 12
+
 def test_call_multiply(mocker):
     address = '0x6489ecbe173ac43dadb9f4f098c3e663e8438dd7'
     fun_name = 'multiply'

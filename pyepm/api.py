@@ -101,7 +101,7 @@ class Api(object):
 
     def transaction_count(self, address=None, defaultBlock='latest'):
         if address is None:
-            address = "0x" + self.address
+            address = self.address
         params = [address, defaultBlock]
         return self._rpc_post('eth_getTransactionCount', params)
 
@@ -257,7 +257,7 @@ class Api(object):
                 sys.stdout.write('.')
                 sys.stdout.flush()
             time.sleep(1)
-            to_count = self.transaction_count(defaultBlock='pending')
+            to_count = self.transaction_count(defaultBlock='latest')
             if to_count > from_count:
                 break
 
