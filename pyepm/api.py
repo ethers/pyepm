@@ -308,7 +308,7 @@ class Api(object):
             if to_count > from_count:
                 break
 
-            if to_count < from_count or i==10:
+            if to_count < from_count or i==30:
                 sys.stdout.write(str(to_count))
                 return 999
 
