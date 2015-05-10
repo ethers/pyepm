@@ -310,7 +310,7 @@ class Api(object):
 
             if to_count < from_count or i==30:
                 sys.stdout.write(str(to_count))
-                return 999
+                raise ApiException(999, 'Wait for tx raising to retry')
 
         if verbose:
             delta = time.time() - start_time
