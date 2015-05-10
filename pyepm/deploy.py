@@ -101,9 +101,10 @@ class Deploy(object):
                                             if d != d.decode('string_escape'):
                                                 definition[key][name][option][i] = d.decode('string_escape')
                                             else:
-                                                padded = "0x" + d.encode('hex')
-                                                definition[key][name][option][i] = u"%s" % padded
-                                                logger.info("  Converting '%s' string to %s" % (d, padded))
+                                                print('@@@@@ NOP')
+                                                # padded = "0x" + d.encode('hex')
+                                                # definition[key][name][option][i] = u"%s" % padded
+                                                # logger.info("  Converting '%s' string to %s" % (d, padded))
                                 data = definition[key][name][option]
                             if option == 'gas':
                                 gas = int(definition[key][name][option])

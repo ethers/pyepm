@@ -71,6 +71,9 @@ class Api(object):
             "params": params}
         headers = {'content-type': 'application/json'}
 
+        # print('@@@@ request')
+        # print(json.dumps(payload))
+
         r = requests.post(self.jsonrpc_url, data=json.dumps(payload), headers=headers)
         if r.status_code >= 400:
             raise ApiException(r.status_code, r.reason)
@@ -165,6 +168,7 @@ class Api(object):
         params = [address, defaultBlock]
         result = self._rpc_post('eth_getCode', params)
         if result is not None:
+            sys.stdout.write('@@@ contract code: %s ' % result)
             return unhex(result) != 0
         return True
 
@@ -282,16 +286,31 @@ class Api(object):
             sys.stdout.write('Waiting for transaction')
             start_time = time.time()
 
+        i=0
         while True:
+            i+=1
             if verbose:
                 sys.stdout.write('.')
                 sys.stdout.flush()
             time.sleep(1)
+
+            # if i==36:
+            #     break
+            # time.sleep(10)
             to_count = self.transaction_count(defaultBlock='pending')
+
+            # if i%10==0:
+            #     i=0
+            #     sys.stdout.write(str(to_count))
+
             if to_count is None:
                 break
             if to_count > from_count:
                 break
+
+            if to_count < from_count or i==10:
+                sys.stdout.write(str(to_count))
+                return 999
 
         if verbose:
             delta = time.time() - start_time
