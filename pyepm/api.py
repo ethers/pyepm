@@ -25,7 +25,7 @@ def abi_data(fun_name, sig, data):
 
     for i, s in enumerate(sig):
         if s == 's':
-            types.append('string')
+            types.append('bytes')
         elif s == 'a':
             types.append('int256[]')
         else:
@@ -308,9 +308,9 @@ class Api(object):
             if to_count > from_count:
                 break
 
-            if to_count < from_count or i==30:
-                sys.stdout.write(str(to_count))
-                raise ApiException(999, 'Wait for tx raising to retry')
+            # if to_count < from_count or i==30:
+            #     sys.stdout.write(str(to_count))
+            #     raise ApiException(999, 'Wait for tx raising to retry')
 
         if verbose:
             delta = time.time() - start_time
