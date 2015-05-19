@@ -17,6 +17,7 @@ from serpent import get_prefix, decode_datalist
 from utils import unhex
 
 logger = logging.getLogger(__name__)
+logging.getLogger("requests").setLevel(logging.WARNING)
 
 def abi_data(fun_name, sig, data):
     types = []
@@ -217,12 +218,13 @@ class Api(object):
         if fun_name is not None:
             data = abi_data(fun_name, sig, data)
 
+        if from_ is None:
+            from_ = self.address
+
         if gas is None:
             gas = self.gas
         if gas_price is None:
             gas_price = self.gas_price
-        if from_ is None:
-            from_ = self.address
         if not self.fixed_price:
             net_price = self.gasprice()
             logger.debug("Gas price: %s" % net_price)
@@ -240,7 +242,7 @@ class Api(object):
             'value': hex(value).rstrip('L')}]
         return self._rpc_post('eth_sendTransaction', params)
 
-    def call(self, dest, fun_name, sig='', data=None, from_=None, defaultBlock='latest'):
+    def call(self, dest, fun_name, sig='', data=None, gas=None, gas_price=None, value=0, from_=None, defaultBlock='latest'):
         if not dest.startswith('0x'):
             dest = '0x' + dest
 
@@ -250,10 +252,25 @@ class Api(object):
         if from_ is None:
             from_ = self.address
 
+        if gas is None:
+            gas = self.gas
+        if gas_price is None:
+            gas_price = self.gas_price
+        if not self.fixed_price:
+            net_price = self.gasprice()
+            logger.debug("Gas price: %s" % net_price)
+            if net_price is None:
+                gas_price = self.gas_price
+            else:
+                gas_price = net_price
+
         params = [{
             'from': from_,
             'to': dest,
-            'data': data}, defaultBlock]
+            'data': data,
+            'gas': hex(gas).rstrip('L'),
+            'gasPrice': hex(gas_price).rstrip('L'),
+            'value': hex(value).rstrip('L')}, defaultBlock]
         r = self._rpc_post('eth_call', params)
         if r is not None:
             return decode_datalist(r[2:].decode('hex'))
@@ -279,7 +296,7 @@ class Api(object):
 
     def wait_for_transaction(self, from_count=None, verbose=False):
         if from_count is None:
-            time.sleep(1)
+            time.sleep(3)
             return
 
         if verbose:
@@ -287,6 +304,7 @@ class Api(object):
             start_time = time.time()
 
         i=0
+        logger.debug("From tx count: %s" % from_count)
         while True:
             i+=1
             if verbose:
@@ -303,14 +321,19 @@ class Api(object):
             #     i=0
             #     sys.stdout.write(str(to_count))
 
+            logger.debug("To tx count: %s" % to_count)
             if to_count is None:
                 break
             if to_count > from_count:
                 break
+            # Double-check if tx count somehow went back in time...
+            if to_count <= from_count:
+                time.sleep(1)
+                from_count = to_count - 1
 
-            # if to_count < from_count or i==30:
-            #     sys.stdout.write(str(to_count))
-            #     raise ApiException(999, 'Wait for tx raising to retry')
+            if to_count < from_count or i==30:
+                sys.stdout.write(str(to_count))
+                raise ApiException(999, 'Wait for tx raising to retry')
 
         if verbose:
             delta = time.time() - start_time
