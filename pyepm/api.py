@@ -326,10 +326,11 @@ class Api(object):
                 break
             if to_count > from_count:
                 break
+
             # Double-check if tx count somehow went back in time...
-            if to_count <= from_count:
-                time.sleep(1)
-                from_count = to_count - 1
+            # if to_count <= from_count:
+            #     time.sleep(1)
+            #     from_count = to_count - 1
 
             if to_count < from_count or i==30:
                 sys.stdout.write(str(to_count))
