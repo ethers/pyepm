@@ -173,47 +173,55 @@ class Deploy(object):
         instance = api.Api(self.config)
         verbose = (True if self.config.get('misc', 'verbosity') > 1 else False)
 
-        addresses = self.try_create_deploy(contract, from_, gas, gas_price, value, retry, skip, verbose, contract_names)
+        tx_hashes = self.try_create_deploy(contract, from_, gas, gas_price, value, retry, skip, verbose, contract_names)
+
 
         # Wait for single contract in pending state
-        if not isinstance(addresses, list):
+        if not isinstance(tx_hashes, list):
             if not retry:
-                instance.wait_for_contract(addresses, defaultBlock='pending', retry=retry, skip=skip, verbose=verbose)
+                instance.wait_for_transaction(tx_hashes, defaultBlock='pending', retry=retry, skip=skip, verbose=verbose)
             else:
                 successful = False
                 while not successful:
-                    successful = instance.wait_for_contract(addresses, defaultBlock='pending', retry=retry, skip=skip, verbose=verbose)
+                    print('@@@ j1000')
+                    successful = instance.wait_for_transaction(tx_hashes, defaultBlock='pending', retry=retry, skip=skip, verbose=verbose)
                     if not successful:
-                        addresses = self.try_create_deploy(contract, from_, gas, gas_price, value, retry, skip, verbose, contract_names)
+                        print('@@@ j2000')
+                        tx_hashes = self.try_create_deploy(contract, from_, gas, gas_price, value, retry, skip, verbose, contract_names)
+                        print('@@@ j2000 txhashes: '+tx_hashes)
 
         # Wait for contract(s) being mined
         if wait:
             if not retry:
-                if isinstance(addresses, list):
-                    for address in addresses:
-                        instance.wait_for_contract(address, retry=retry, skip=skip, verbose=verbose)
+                if isinstance(tx_hashes, list):
+                    for tx_hash in tx_hashes:
+                        instance.wait_for_transaction(tx_hash, retry=retry, skip=skip, verbose=verbose)
                 else:
-                    instance.wait_for_contract(addresses, retry=retry, skip=skip, verbose=verbose)
+                    instance.wait_for_transaction(tx_hashes, retry=retry, skip=skip, verbose=verbose)
             else:
                 successful = False
                 while not successful:
-                    if isinstance(addresses, list):
-                        for i, address in enumerate(addresses):
+                    if isinstance(tx_hashes, list):
+                        for i, tx_hash in enumerate(tx_hashes):
                             success = False
                             while not success:
-                                success = instance.wait_for_contract(address, retry=retry, skip=skip, verbose=verbose)
+                                success = instance.wait_for_transaction(tx_hash, retry=retry, skip=skip, verbose=verbose)
                                 if not success:
                                     break
-                            if success and i == len(addresses) - 1:
+                            if success and i == len(tx_hashes) - 1:
                                 successful = True
                             elif not success:
                                 break
                     else:
-                        successful = instance.wait_for_contract(addresses, retry=retry, skip=skip, verbose=verbose)
+                        print('@@@ j3000')
+                        successful = instance.wait_for_transaction(tx_hashes, retry=retry, skip=skip, verbose=verbose)
                     if not successful:
-                        addresses = self.try_create_deploy(contract, from_, gas, gas_price, value, retry, skip, verbose, contract_names)
+                        print('@@@ j5000')
+                        tx_hashes = self.try_create_deploy(contract, from_, gas, gas_price, value, retry, skip, verbose, contract_names)
 
-        return addresses
+        # todo multiple hashes
+        return instance.get_contract_address(tx_hashes)
+        return address
 
     def try_create_deploy(self, contract, from_, gas, gas_price, value, retry, skip, verbose, contract_names):
         instance = api.Api(self.config)
@@ -224,25 +232,26 @@ class Deploy(object):
             for contract_name, contract in contracts:
                 logger.debug("%s: %s" % (contract_name, contract))
 
-                address = self.try_create(contract, contract_name=contract_name, from_=from_, gas=gas, gas_price=gas_price, value=value)
+                tx_hash = self.try_create(contract, contract_name=contract_name, from_=from_, gas=gas, gas_price=gas_price, value=value)
 
                 if not retry:
-                    instance.wait_for_contract(address, defaultBlock='pending', retry=retry, skip=skip, verbose=verbose)
+                    instance.wait_for_transaction(tx_hash, defaultBlock='pending', retry=retry, skip=skip, verbose=verbose)
                 else:
                     successful = False
                     while not successful:
-                        successful = instance.wait_for_contract(address, defaultBlock='pending', retry=retry, skip=skip, verbose=verbose)
+                        successful = instance.wait_for_transaction(tx_hash, defaultBlock='pending', retry=retry, skip=skip, verbose=verbose)
                         if not successful:
-                            address = self.try_create(contract, contract_name=contract_name, from_=from_, gas=gas, gas_price=gas_price, value=value)
+                            tx_hash = self.try_create(contract, contract_name=contract_name, from_=from_, gas=gas, gas_price=gas_price, value=value)
 
-                addresses.append(address)
+                # TODO
+                # addresses.append(address)
         else:
             contract = compile(open(contract).read()).encode('hex')
-            address = self.try_create(contract, contract_name=contract_names, from_=from_, gas=gas, gas_price=gas_price, value=value)
+            tx_hash = self.try_create(contract, contract_name=contract_names, from_=from_, gas=gas, gas_price=gas_price, value=value)
 
         if addresses:
             return addresses
-        return address
+        return tx_hash
 
     def try_create(self, contract, from_, gas, gas_price, value, contract_name=None):
         instance = api.Api(self.config)
